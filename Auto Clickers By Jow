@@ -1,1 +1,100 @@
-loadstring(game:HttpGet('https://pastefy.app/rfHlo7we/raw'))()
+-- JOW HUB - Auto Clicker Remastered
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local player = Players.LocalPlayer
+
+-- UI Design: Dark Glassmorphism + Diamond Blue Accent
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "JOW_HUB_Clicker"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 150)
+frame.Position = UDim2.new(0.5, -100, 0.5, -75)
+frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+frame.BackgroundTransparency = 0.3
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+local blur = Instance.new("UICorner", frame)
+blur.CornerRadius = UDim.new(0, 12)
+
+local stroke = Instance.new("UIStroke", frame)
+stroke.Color = Color3.fromRGB(0, 170, 255) -- Diamond Blue
+stroke.Thickness = 2
+stroke.Transparency = 0.4
+
+-- Title
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "By:Jow - CLICKER"
+title.TextColor3 = Color3.fromRGB(0, 170, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+
+-- Toggle Button
+local toggleButton = Instance.new("TextButton", frame)
+toggleButton.Size = UDim2.new(0.8, 0, 0, 35)
+toggleButton.Position = UDim2.new(0.1, 0, 0, 40)
+toggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Text = "OFF"
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.BorderSizePixel = 0
+Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 6)
+
+-- Speed Box
+local speedBox = Instance.new("TextBox", frame)
+speedBox.Size = UDim2.new(0.8, 0, 0, 35)
+speedBox.Position = UDim2.new(0.1, 0, 0, 90)
+speedBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+speedBox.TextColor3 = Color3.fromRGB(0, 170, 255)
+speedBox.PlaceholderText = "typing..."
+speedBox.Text = "20"
+speedBox.Font = Enum.Font.GothamBold
+speedBox.BorderSizePixel = 0
+Instance.new("UICorner", speedBox).CornerRadius = UDim.new(0, 6)
+
+-- Target Icon (Minimalist)
+local target = Instance.new("ImageButton", screenGui)
+target.Size = UDim2.new(0, 40, 0, 40)
+target.Position = UDim2.new(0.5, -20, 0.5, -20)
+target.BackgroundTransparency = 1
+target.Image = "rbxassetid://7072718362"
+target.ImageColor3 = Color3.fromRGB(0, 170, 255)
+target.Active = true
+target.Draggable = true
+
+-- Logic
+local clicking = false
+local clickThread
+
+local function getCPS()
+	local n = tonumber(speedBox.Text)
+	return (n and n > 0 and n <= 1000) and n or 20
+end
+
+local function startClicking()
+	if clickThread then return end
+	clickThread = task.spawn(function()
+		while clicking do
+			local pos = target.AbsolutePosition + (target.AbsoluteSize / 2)
+			VirtualInputManager:SendMouseButtonEvent(math.floor(pos.X), math.floor(pos.Y), 0, true, game, 0)
+			VirtualInputManager:SendMouseButtonEvent(math.floor(pos.X), math.floor(pos.Y), 0, false, game, 0)
+			task.wait(1 / getCPS())
+		end
+	end)
+end
+
+toggleButton.MouseButton1Click:Connect(function()
+	clicking = not clicking
+	toggleButton.Text = clicking and "ON" or "OFF"
+	toggleButton.BackgroundColor3 = clicking and Color3.fromRGB(0, 100, 150) or Color3.fromRGB(30, 30, 30)
+	if clicking then startClicking() else clickThread = nil end
+end)
